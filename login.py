@@ -278,13 +278,30 @@ def readCategoryList():
         return {}
 
 
+def raedProductDetial(spuCode,vendorId):
+    productDetialUrl="http://mall.yaoex.com/product/productDetail/"+str(spuCode)+"/"+str(vendorId)
+    print("productDetialUrl:"+productDetialUrl)
+    responseRes = webSession.get(productDetialUrl,  headers = defaultHeader)
+    print(f"statusCode = {responseRes.status_code}")
+    # print(f"text = {responseRes.text}")
+    webSession.cookies.save()
+    return responseRes.text
+
+
 def raedProductList(code,page):
-    searchProductList=json.loads(postSearchProductList(code,1))
+    searchProductList=json.loads(postSearchProductList(code,page))
     print(searchProductList['rtn_msg'])
     pageCount=searchProductList['data']['pageCount']
     totalCount=searchProductList['data']['totalCount']
     print("pageCount:"+str(pageCount))
     print("totalCount"+str(totalCount))
+    for x in searchProductList['data']['shopProducts']:
+        print(x['spuCode'])
+        print(x['vendorId'])
+        productDetial=raedProductDetial(x['spuCode'],x['vendorId'])
+        print(productDetial)
+        anything=input()
+    return searchProductList['data']['shopProducts']
             
 def readCategoryProducts(code,name,page):
     print(code+ ":" + name)
@@ -294,9 +311,13 @@ def readCategoryProducts(code,name,page):
     totalCount=searchProductList['data']['totalCount']
     print("pageCount:"+str(pageCount))
     print("totalCount"+str(totalCount))
-    for i in range(1,pageCount+1):
-        raedProductList(code,i)
-    anything=input()
+    for i in range(page,pageCount+1):
+        print("now : page :"+str(i)+"  ALL:"+ str(totalCount))
+        shopProducts=raedProductList(code,i)
+        print(len(shopProducts))
+        print(shopProducts)
+        
+    
 
 
 if __name__ == "__main__":
@@ -310,11 +331,12 @@ if __name__ == "__main__":
     categoryList=readCategoryList()
     for x in categoryList.keys():
         print(x+ "  :  " + categoryList[x])
-        searchProductList=json.loads(postSearchProductList(x,1))
-        print(searchProductList['rtn_msg'])
-        print("pageCount:"+str(searchProductList['data']['pageCount']))
-        print("totalCount"+str(searchProductList['data']['totalCount']))
-        print(searchProductList)
+        readCategoryProducts(x,categoryList[x],1)
+        # searchProductList=json.loads(postSearchProductList(x,1))
+        # print(searchProductList['rtn_msg'])
+        # print("pageCount:"+str(searchProductList['data']['pageCount']))
+        # print("totalCount"+str(searchProductList['data']['totalCount']))
+        # print(searchProductList)
         anything=input()
         
 
