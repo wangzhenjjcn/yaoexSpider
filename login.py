@@ -21,7 +21,7 @@ except:
 
  
 webSession = requests.session()
-webSession.cookies = cookielib.LWPCookieJar(filename = "mafengwoCookies.txt")
+webSession.cookies = cookielib.LWPCookieJar(filename = "cookie.txt")
 
 
 
@@ -321,8 +321,8 @@ def readCategoryProducts(code,name,page):
 
 
 if __name__ == "__main__":
-    webSession.cookies.load()
-    print(webSession.cookies)
+    # webSession.cookies.load()
+    # print(webSession.cookies)
     mainpage=getMainPage()
     loGinInfo=getLoginIfo()
     # if("var showName = \'\'" in loGinInfo ):
