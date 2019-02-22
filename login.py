@@ -234,6 +234,70 @@ def postSearchProductList(product2ndLMCode,nowPage):
     # print(f"text = {responseRes.text}")
     return responseRes.text
 
+def readCategoryList():
+    categoryListData=getCategoryList()
+    categoryList=json.loads(categoryListData)
+    categoryAll={}
+    categoryMin={}
+    if ("success" in categoryList['status']):
+        print(len(categoryList['data']))
+        for category in categoryList['data']:
+            category2ListData=getCategoryListByCode(category['code'])
+            category2List=json.loads(category2ListData)
+            if ("success" in category2List['status']):
+                if(len(category2List['data']['snd_catagory'])<1):
+                        # print("终极分类："+category['fixCategoryName0'])
+                        categoryMin[category['code']]=category['name']
+                categoryAll[category['code']]=category['name']
+                # print(category2List['data']['snd_catagory'])
+                for category2 in category2List['data']['snd_catagory']:
+                    category3ListData=getCategoryListByCode(category2['code'])
+                    category3List=json.loads(category3ListData)
+                    if ("success" in category3List['status']):
+                        if(len(category3List['data']['snd_catagory'])<1):
+                            # print("终极分类："+category2['name'])
+                            categoryMin[category2['code']]=category2['name']
+                        categoryAll[category2['code']]=category2['name']
+                        # print(len(category3List['data']['snd_catagory']))
+                        for category3 in category3List['data']['snd_catagory']:
+                            category4ListData=getCategoryListByCode(category3['code'])
+                            category4List=json.loads(category4ListData)
+                            if ("success" in category4List['status']):
+                                if(len(category4List['data']['snd_catagory'])<1):
+                                    # print("终极分类："+category3['name'])
+                                    categoryMin[category3['code']]=category3['name']
+                                else:
+                                    print("居然还有分类："+category4List['data']['snd_catagory'])
+                                categoryAll[category3['code']]=category3['name']
+                            # print("==读取："+category['fixCategoryName0']+" 次级目录中")
+                            # print("====读取："+category2['name']+"   次级目录中")
+                            # print("======读取："+category3['name']+"     次级目录中")
+        return categoryMin
+    else:
+        print("Login err")
+        return {}
+
+
+def raedProductList(code,page):
+    searchProductList=json.loads(postSearchProductList(code,1))
+    print(searchProductList['rtn_msg'])
+    pageCount=searchProductList['data']['pageCount']
+    totalCount=searchProductList['data']['totalCount']
+    print("pageCount:"+str(pageCount))
+    print("totalCount"+str(totalCount))
+            
+def readCategoryProducts(code,name,page):
+    print(code+ ":" + name)
+    searchProductList=json.loads(postSearchProductList(code,1))
+    print(searchProductList['rtn_msg'])
+    pageCount=searchProductList['data']['pageCount']
+    totalCount=searchProductList['data']['totalCount']
+    print("pageCount:"+str(pageCount))
+    print("totalCount"+str(totalCount))
+    for i in range(1,pageCount+1):
+        raedProductList(code,i)
+    anything=input()
+
 
 if __name__ == "__main__":
     webSession.cookies.load()
@@ -242,28 +306,19 @@ if __name__ == "__main__":
     loGinInfo=getLoginIfo()
     # if("var showName = \'\'" in loGinInfo ):
     #     reLogin()
-    # loGinInfo=getLoginIfo()
-    categoryListData=getCategoryList()
-    categoryList=json.loads(categoryListData)
-    if ("success" in categoryList['status']):
-        print(len(categoryList['data']))
-        for category in categoryList['data']:
-            print("读取："+category['fixCategoryName0']+"次级目录中")
-            category2ListData=getCategoryListByCode(category['code'])
-            category2List=json.loads(category2ListData)
-            if ("success" in category2List['status']):
-                print(category2List['data']['snd_catagory'])
-                for category2 in category2List['data']['snd_catagory']:
-                    print("读取："+category2['name']+"次级目录中")
-                    category3ListData=getCategoryListByCode(category2['code'])
-                    category3List=json.loads(category3ListData)
-                    if ("success" in category3List['status']):
-                        print(len(category3List['data']['snd_catagory']))
-                        for category3 in category3List['data']['snd_catagory']:
-                            print("读取："+category3['name']+"次级目录中")
-    else:
-        print("Login err")
+    # loGinInfo=getLoginIfo() 
+    categoryList=readCategoryList()
+    for x in categoryList.keys():
+        print(x+ "  :  " + categoryList[x])
+        searchProductList=json.loads(postSearchProductList(x,1))
+        print(searchProductList['rtn_msg'])
+        print("pageCount:"+str(searchProductList['data']['pageCount']))
+        print("totalCount"+str(searchProductList['data']['totalCount']))
+        print(searchProductList)
+        anything=input()
+        
 
+    
      
     
     # if ("登录状态异常" in categoryList['rtn_msg']):
