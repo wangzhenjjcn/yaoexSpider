@@ -9,7 +9,12 @@ from Crypto.Cipher import PKCS1_v1_5
 import base64
 from PIL import Image
 from random import random
- 
+
+
+data_file=open("data.csv","a")
+data_code=open("code.csv","a")
+cList={}
+
 try:
  
     import cookielib
@@ -193,7 +198,7 @@ def getCategoryListByCode(code):
 
 def postSearchProductList(product2ndLMCode,nowPage):
     searchProductListUrl="http://gateway-b2b.fangkuaiyi.com/api/search/searchProductList"
-    print("searchProductListUrl:"+searchProductListUrl)
+    # print("searchProductListUrl:"+searchProductListUrl+"     code:"+str(product2ndLMCode)+"   page:"+str(nowPage))
     postData = { 
         "tradername": "yaoex_pc",
         "trader": "pc",
@@ -230,7 +235,7 @@ def postSearchProductList(product2ndLMCode,nowPage):
         }
     responseRes = webSession.post(searchProductListUrl, data = postData, headers = defaultHeader,verify=False )
     webSession.cookies.save()
-    print(f"statusCode = {responseRes.status_code}")
+    # print(f"statusCode = {responseRes.status_code}")
     # print(f"text = {responseRes.text}")
     return responseRes.text
 
@@ -239,6 +244,9 @@ def readCategoryList():
     categoryList=json.loads(categoryListData)
     categoryAll={}
     categoryMin={}
+    cData=""
+    c2Data=""
+    c3Data=""
     if ("success" in categoryList['status']):
         print(len(categoryList['data']))
         for category in categoryList['data']:
@@ -248,6 +256,8 @@ def readCategoryList():
                 if(len(category2List['data']['snd_catagory'])<1):
                         # print("终极分类："+category['fixCategoryName0'])
                         categoryMin[category['code']]=category['name']
+                        cData=category['name']
+                        cList[category['code']]=cData+","+c2Data+","+c3Data
                 categoryAll[category['code']]=category['name']
                 # print(category2List['data']['snd_catagory'])
                 for category2 in category2List['data']['snd_catagory']:
@@ -257,6 +267,9 @@ def readCategoryList():
                         if(len(category3List['data']['snd_catagory'])<1):
                             # print("终极分类："+category2['name'])
                             categoryMin[category2['code']]=category2['name']
+                            cData=category['name']
+                            c2Data=category2['name']
+                            cList[category2['code']]=cData+","+c2Data+","+c3Data
                         categoryAll[category2['code']]=category2['name']
                         # print(len(category3List['data']['snd_catagory']))
                         for category3 in category3List['data']['snd_catagory']:
@@ -266,6 +279,10 @@ def readCategoryList():
                                 if(len(category4List['data']['snd_catagory'])<1):
                                     # print("终极分类："+category3['name'])
                                     categoryMin[category3['code']]=category3['name']
+                                    cData=category['name']
+                                    c2Data=category2['name']
+                                    c3Data=category3['name']
+                                    cList[category3['code']]=cData+","+c2Data+","+c3Data
                                 else:
                                     print("居然还有分类："+category4List['data']['snd_catagory'])
                                 categoryAll[category3['code']]=category3['name']
@@ -290,17 +307,47 @@ def raedProductDetial(spuCode,vendorId):
 
 def raedProductList(code,page):
     searchProductList=json.loads(postSearchProductList(code,page))
-    print(searchProductList['rtn_msg'])
-    pageCount=searchProductList['data']['pageCount']
-    totalCount=searchProductList['data']['totalCount']
-    print("pageCount:"+str(pageCount))
-    print("totalCount"+str(totalCount))
+    # print(searchProductList['rtn_msg'])
+    # pageCount=int(searchProductList['data']['pageCount'])
+    # totalCount=int(searchProductList['data']['totalCount'])
+    # print("pageCount:"+str(pageCount))
+    # print("totalCount"+str(totalCount))
+    if (searchProductList['data']==None):
+        return None
     for x in searchProductList['data']['shopProducts']:
-        print(x['spuCode'])
-        print(x['vendorId'])
-        productDetial=raedProductDetial(x['spuCode'],x['vendorId'])
-        print(productDetial)
-        anything=input()
+        data=""
+        # print(x['spuCode'])
+        # print(x['vendorId'])
+        
+        try:
+            data_code.write( cList[code]+","+ x['spuCode']+","+x['vendorId']+"\n")
+            data_code.flush()
+            pass
+        except:
+            continue
+            
+        # productDetial=raedProductDetial(x['spuCode'],x['vendorId'])
+        # print(productDetial)
+        # anything=input()
+
+
+
+        # for y in x:
+        #     data=data+str(x[y]).replace(",","，")+","
+        # data=data+"\n"
+        
+        # try:
+        #     data_file.write(data)
+        #     data_file.flush()
+        #     pass
+        # except:
+           
+        #     continue
+
+
+
+        # print(data)
+        # anything=input()
     return searchProductList['data']['shopProducts']
             
 def readCategoryProducts(code,name,page):
@@ -312,45 +359,37 @@ def readCategoryProducts(code,name,page):
     print("pageCount:"+str(pageCount))
     print("totalCount"+str(totalCount))
     for i in range(page,pageCount+1):
-        print("now : page :"+str(i)+"  ALL:"+ str(totalCount))
+        print(cList[code]+"   : page :"+str(i)+"  ALL:"+ str(totalCount))
         shopProducts=raedProductList(code,i)
-        print(len(shopProducts))
-        print(shopProducts)
+        if(shopProducts==None):
+            return
+        # print(len(shopProducts))
+        # print(shopProducts)
         
     
 
 
 if __name__ == "__main__":
-    # webSession.cookies.load()
-    # print(webSession.cookies)
+    webSession.cookies.load()
+    print(webSession.cookies)
     mainpage=getMainPage()
     loGinInfo=getLoginIfo()
-    # if("var showName = \'\'" in loGinInfo ):
-    #     reLogin()
-    # loGinInfo=getLoginIfo() 
+    if("var showName = \'\'" in loGinInfo ):
+        reLogin()
+    loGinInfo=getLoginIfo() 
     categoryList=readCategoryList()
+    # cList=categoryList
     for x in categoryList.keys():
-        print(x+ "  :  " + categoryList[x])
         readCategoryProducts(x,categoryList[x],1)
         # searchProductList=json.loads(postSearchProductList(x,1))
         # print(searchProductList['rtn_msg'])
         # print("pageCount:"+str(searchProductList['data']['pageCount']))
         # print("totalCount"+str(searchProductList['data']['totalCount']))
         # print(searchProductList)
-        anything=input()
-        
-
-    
-     
-    
+    anything=input()
+data_file.close()
+data_code.close()
     # if ("登录状态异常" in categoryList['rtn_msg']):
     #     print("Login err")
     # else:
     #     print(len(categoryList['data']))
-
- 
-
-
-
-
-
