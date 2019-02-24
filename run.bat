@@ -1,3 +1,3 @@
 @echo off
-python "login.py"
+python "read.py"
 pause;

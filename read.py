@@ -305,6 +305,37 @@ def raedProductDetial(spuCode,vendorId):
     return responseRes.text
 
 
+def getHtmlByCode(fromCode,toCode,data):
+    if(fromCode in data and toCode in data[data.index(fromCode):]):
+        print(fromCode+","+toCode+", in data")
+        value=data[data.index(fromCode)+len(fromCode):]
+        value=value[:value.index(toCode)]
+        return value
+    else:
+        return ""
+
+
+def getHtmlById(id,htmlCode):
+    divData=getHtmlByCode("id=\""+id+"\"","</div>",htmlCode)
+    divData=divData[divData.index(">")+1:]
+    # print(divData)
+    return divData
+
+def getHtmlByClass(clazz,htmlCode):
+    divData=getHtmlByCode("class=\""+clazz+"\"","</div>",htmlCode)
+    divData=divData[divData.index(">")+1:]
+    # print(divData)
+    return divData
+
+# def removeTags(htmlCode):
+#     data=htmlCode
+#     datas=str(data).split("<")
+
+#         data=data[data.index("<")+1:]
+#         data=data[data.index(">")+1:]
+#         print(data)
+
+
 def raedProductList(code,page):
     searchProductList=json.loads(postSearchProductList(code,page))
     # print(searchProductList['rtn_msg'])
@@ -316,6 +347,7 @@ def raedProductList(code,page):
         return None
     for x in searchProductList['data']['shopProducts']:
         data=""
+
         # print(x['spuCode'])
         # print(x['vendorId'])
         
@@ -326,10 +358,12 @@ def raedProductList(code,page):
         except:
             continue
             
-        # productDetial=raedProductDetial(x['spuCode'],x['vendorId'])
-        # print(productDetial)
-        # anything=input()
-
+        productDetial=raedProductDetial(x['spuCode'],x['vendorId'])
+        productName=getHtmlByClass("product-info",productDetial)
+        print(productName)
+        anything=input()
+        print(productDetial)
+        anything=input()
 
 
         # for y in x:
@@ -343,8 +377,12 @@ def raedProductList(code,page):
         # except:
            
         #     continue
-
-
+        try:
+            data_code.write("\n")
+            data_code.flush()
+            pass
+        except  :
+            continue
 
         # print(data)
         # anything=input()
@@ -374,8 +412,8 @@ if __name__ == "__main__":
     print(webSession.cookies)
     mainpage=getMainPage()
     loGinInfo=getLoginIfo()
-    if("var showName = \'\'" in loGinInfo ):
-        reLogin()
+    # if("var showName = \'\'" in loGinInfo ):
+    #     reLogin()
     loGinInfo=getLoginIfo() 
     categoryList=readCategoryList()
     # cList=categoryList
