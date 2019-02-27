@@ -318,74 +318,136 @@ def getHtmlByCode(fromCode,toCode,data):
 def getHtmlById(id,htmlCode):
     divData=getHtmlByCode("id=\""+id+"\"","</div>",htmlCode)
     divData=divData[divData.index(">")+1:]
-    # print(divData)
     return divData
 
-def getHtmlByClass(clazz,htmlCode):
-    divData=getHtmlByCode("class=\""+clazz+"\"","</div>",htmlCode)
-    divData=divData[divData.index(">")+1:]
-    # print(divData)
-    return divData
+def getMainInfo(data):
+    return getHtmlByCode("<div class=\"product-inner fl\">","<div class=\"agreement_deal\">",data)   
+ 
+def removeTags(htmlCode):
+    data=htmlCode
+    while ("<" in data and ">"in data[data.index("<")+1:]):
+        databefor=data[:data.index("<")]
+        dataafter=data[data.index("<")+1:]
+        if((len(dataafter)-1)==(dataafter.index(">")+1)):
+            dataafter=""
+        else:
+            dataafter=dataafter[dataafter.index(">")+1:]
+        data=databefor+dataafter
+    # print(data)
+    return data
 
-# def removeTags(htmlCode):
-#     data=htmlCode
-#     datas=str(data).split("<")
+def writeFirstLine():
+    searchProductList=json.loads(postSearchProductList("ABA",1))
+    if (searchProductList['data']==None):
+        return None
+    try:
+        data_file.write( "一级分类,二级分类,三级分类,spuCode,vendorId,")
+        data_file.flush()
+        pass
+    except:
+        return
+    for x in searchProductList['data']['shopProducts']:
+        for y in x :
+            try:
+                data_file.write( y+",")
+                data_file.flush()
+                pass
+            except:
+                try:
+                    data_file.write( "\n")
+                    data_file.flush()
+                    continue
+                except:
+                    return
+    try:
+            data_file.write( "\n")
+            data_file.flush()
+            pass
+    except:
+            return
+    return
 
-#         data=data[data.index("<")+1:]
-#         data=data[data.index(">")+1:]
-#         print(data)
-
+def writeFirstCodeLine():
+    searchProductList=json.loads(postSearchProductList("ABA",1))
+    if (searchProductList['data']==None):
+        return None
+    try:
+        data_code.write( "一级分类,二级分类,三级分类,spuCode,vendorId,")
+        data_code.flush()
+        pass
+    except:
+        return
+    for x in searchProductList['data']['shopProducts']:
+        for y in x :
+            try:
+                data_code.write( y+",")
+                data_code.flush()
+                pass
+            except:
+                try:
+                    data_code.write( "\n")
+                    data_code.flush()
+                    continue
+                except:
+                    return    
+    try:
+            data_code.write( "\n")
+            data_code.flush()
+            pass
+    except:
+            return
+    return
 
 def raedProductList(code,page):
     searchProductList=json.loads(postSearchProductList(code,page))
+    if (searchProductList['data']==None):
+        return None
     # print(searchProductList['rtn_msg'])
     # pageCount=int(searchProductList['data']['pageCount'])
     # totalCount=int(searchProductList['data']['totalCount'])
     # print("pageCount:"+str(pageCount))
     # print("totalCount"+str(totalCount))
-    if (searchProductList['data']==None):
-        return None
     for x in searchProductList['data']['shopProducts']:
         data=""
-
-        # print(x['spuCode'])
-        # print(x['vendorId'])
-        
-        try:
-            data_code.write( cList[code]+","+ x['spuCode']+","+x['vendorId']+"\n")
-            data_code.flush()
-            pass
-        except:
-            continue
-            
+        data=data+cList[code]+","+ x['spuCode']+","+x['vendorId']+","
+        for y in x:
+            data=data+str(x[y]).replace(",","，").strip()+","
         productDetial=raedProductDetial(x['spuCode'],x['vendorId'])
-        productName=getHtmlByClass("product-info",productDetial)
-        print(productName)
-        anything=input()
-        print(productDetial)
-        anything=input()
-
-
-        # for y in x:
-        #     data=data+str(x[y]).replace(",","，")+","
-        # data=data+"\n"
-        
-        # try:
-        #     data_file.write(data)
-        #     data_file.flush()
-        #     pass
-        # except:
-           
-        #     continue
-        try:
-            data_code.write("\n")
-            data_code.flush()
-            pass
-        except  :
-            continue
-
+        detial=getMainInfo(productDetial)
+        detial=removeTags(detial)
+        detial=detial.expandtabs(tabsize=4)
+        detial=detial.strip()
+        detial=detial.replace("\n/g"," ")
+        detial=detial.replace("\n\n"," ")
+        detial=detial.replace("\n"," ")
+        detial=detial.replace("&nbsp;","")
+        detial=detial.expandtabs(tabsize=4)
+        detial=detial.expandtabs(tabsize=4)
+        detial=detial.replace("  "," ")
+        detial=detial.replace("  "," ")
+        detial=detial.replace("  "," ")
+        detial=detial.replace("  "," ")
+        # print(detial)
+        # anything=input()
+        # # print(removeTags(productName))
+        # # anything=input()
+        # # print(productDetial)
+        # anything=input()
+        data=data+detial.replace(",","，").strip().replace("\n"," ")+","
+        data=data+"\n"
         # print(data)
         # anything=input()
+        try:
+            data_code.write(data)
+            data_code.flush()
+            pass
+        except:       
+            try:
+                data_code.write("\n")
+                data_code.flush()
+                continue
+            except  :
+                return searchProductList['data']['shopProducts']
     return searchProductList['data']['shopProducts']
             
 def readCategoryProducts(code,name,page):
@@ -403,6 +465,7 @@ def readCategoryProducts(code,name,page):
             return
         # print(len(shopProducts))
         # print(shopProducts)
+
         
     
 
@@ -417,6 +480,7 @@ if __name__ == "__main__":
     loGinInfo=getLoginIfo() 
     categoryList=readCategoryList()
     # cList=categoryList
+    writeFirstLine()
     for x in categoryList.keys():
         readCategoryProducts(x,categoryList[x],1)
         # searchProductList=json.loads(postSearchProductList(x,1))
