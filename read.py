@@ -257,7 +257,7 @@ def readCategoryList():
                         # print("终极分类："+category['fixCategoryName0'])
                         categoryMin[category['code']]=category['name']
                         cData=category['name']
-                        cList[category['code']]=cData+","+c2Data+","+c3Data
+                        cList[category['code']]=category['code']+","+cData+","+c2Data+","+c3Data
                 categoryAll[category['code']]=category['name']
                 # print(category2List['data']['snd_catagory'])
                 for category2 in category2List['data']['snd_catagory']:
@@ -269,7 +269,7 @@ def readCategoryList():
                             categoryMin[category2['code']]=category2['name']
                             cData=category['name']
                             c2Data=category2['name']
-                            cList[category2['code']]=cData+","+c2Data+","+c3Data
+                            cList[category2['code']]=category2['code']+","+cData+","+c2Data+","+c3Data
                         categoryAll[category2['code']]=category2['name']
                         # print(len(category3List['data']['snd_catagory']))
                         for category3 in category3List['data']['snd_catagory']:
@@ -282,7 +282,7 @@ def readCategoryList():
                                     cData=category['name']
                                     c2Data=category2['name']
                                     c3Data=category3['name']
-                                    cList[category3['code']]=cData+","+c2Data+","+c3Data
+                                    cList[category3['code']]=category3['code']+","+cData+","+c2Data+","+c3Data
                                 else:
                                     print("居然还有分类："+category4List['data']['snd_catagory'])
                                 categoryAll[category3['code']]=category3['name']
@@ -297,9 +297,8 @@ def readCategoryList():
 
 def raedProductDetial(spuCode,vendorId):
     productDetialUrl="http://mall.yaoex.com/product/productDetail/"+str(spuCode)+"/"+str(vendorId)
-    print("productDetialUrl:"+productDetialUrl)
     responseRes = webSession.get(productDetialUrl,  headers = defaultHeader)
-    print(f"statusCode = {responseRes.status_code}")
+    print(f"statusCode = {responseRes.status_code}" +":"+productDetialUrl)
     # print(f"text = {responseRes.text}")
     webSession.cookies.save()
     return responseRes.text
@@ -307,7 +306,7 @@ def raedProductDetial(spuCode,vendorId):
 
 def getHtmlByCode(fromCode,toCode,data):
     if(fromCode in data and toCode in data[data.index(fromCode):]):
-        print(fromCode+","+toCode+", in data")
+        # print(fromCode+","+toCode+", in data")
         value=data[data.index(fromCode)+len(fromCode):]
         value=value[:value.index(toCode)]
         return value
@@ -341,7 +340,7 @@ def writeFirstLine():
     if (searchProductList['data']==None):
         return None
     try:
-        data_file.write( "一级分类,二级分类,三级分类,spuCode,vendorId,")
+        data_file.write( "分类代码,一级分类,二级分类,三级分类,spuCode,vendorId,")
         data_file.flush()
         pass
     except:
@@ -372,10 +371,11 @@ def writeFirstCodeLine():
     if (searchProductList['data']==None):
         return None
     try:
-        data_code.write( "一级分类,二级分类,三级分类,spuCode,vendorId,")
+        data_code.write( "分类代码,一级分类,二级分类,三级分类,spuCode,vendorId,")
         data_code.flush()
         pass
     except:
+        print("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
         return
     for x in searchProductList['data']['shopProducts']:
         for y in x :
@@ -384,6 +384,7 @@ def writeFirstCodeLine():
                 data_code.flush()
                 pass
             except:
+                print("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
                 try:
                     data_code.write( "\n")
                     data_code.flush()
@@ -395,6 +396,7 @@ def writeFirstCodeLine():
             data_code.flush()
             pass
     except:
+            print("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
             return
     return
 
@@ -475,12 +477,12 @@ if __name__ == "__main__":
     print(webSession.cookies)
     mainpage=getMainPage()
     loGinInfo=getLoginIfo()
-    # if("var showName = \'\'" in loGinInfo ):
-    #     reLogin()
+    if("var showName = \'\'" in loGinInfo ):
+        reLogin()
     loGinInfo=getLoginIfo() 
     categoryList=readCategoryList()
     # cList=categoryList
-    writeFirstLine()
+    writeFirstCodeLine()
     for x in categoryList.keys():
         readCategoryProducts(x,categoryList[x],1)
         # searchProductList=json.loads(postSearchProductList(x,1))
