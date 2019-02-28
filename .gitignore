@@ -1,6 +1,6 @@
 data/
 *.csv
-*.txt
+cookie.*
 
 
 # Byte-compiled / optimized / DLL files
