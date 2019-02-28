@@ -143,24 +143,24 @@ def doLogin(username,password):
         }
     responseRes = webSession.post(loginUrl, data = postData, headers = defaultHeader,verify=False )
     webSession.cookies.save()
-    print(f"statusCode = {responseRes.status_code}")
+    print(f"statusCode = {responseRes.status_code}"+":"+loginUrl)
     # print(f"text = {responseRes.text}")
     return responseRes.text
 
 def getMainPage():
     mainPageUrl="http://mall.yaoex.com/?source=1"
-    print("mainPageUrl:"+mainPageUrl)
+    # print("mainPageUrl:"+mainPageUrl)
     responseRes = webSession.get(mainPageUrl,  headers = defaultHeader)
-    print(f"statusCode = {responseRes.status_code}")
+    print(f"statusCode = {responseRes.status_code}" +":"+mainPageUrl)
     # print(f"text = {responseRes.text}")
     webSession.cookies.save()
     return responseRes.text
 
 def getLoginIfo():
     LoginInfoUrl="http://mall.yaoex.com/index/login"
-    print("LoginInfoUrl:"+LoginInfoUrl)
+    # print("LoginInfoUrl:"+LoginInfoUrl)
     responseRes = webSession.get(LoginInfoUrl,  headers = defaultHeader)
-    print(f"statusCode = {responseRes.status_code}")
+    print(f"statusCode = {responseRes.status_code}"+":"+LoginInfoUrl)
     # print(f"text = {responseRes.text}")
     webSession.cookies.save()
     return responseRes.text
@@ -180,18 +180,18 @@ def reLogin():
 
 def getCategoryList():
     categoryListUrl="http://mall.yaoex.com/catg/categoryList"
-    print("categoryListUrl:"+categoryListUrl)
+    # print()
     responseRes = webSession.get(categoryListUrl,  headers = defaultHeader)
-    print(f"statusCode = {responseRes.status_code}")
+    print(f"statusCode = {responseRes.status_code}"+":"+categoryListUrl)
     # print(f"text = {responseRes.text}")
     webSession.cookies.save()
     return responseRes.text
 
 def getCategoryListByCode(code):
     categoryListUrl="http://mall.yaoex.com/catg/secondCategoryList?code="+code
-    print("categoryListUrl:"+categoryListUrl)
+    # print("categoryListUrl:"+categoryListUrl)
     responseRes = webSession.get(categoryListUrl,  headers = defaultHeader)
-    print(f"statusCode = {responseRes.status_code}")
+    print(f"statusCode = {responseRes.status_code}"+":"+categoryListUrl)
     # print(f"text = {responseRes.text}")
     webSession.cookies.save()
     return responseRes.text
@@ -235,7 +235,7 @@ def postSearchProductList(product2ndLMCode,nowPage):
         }
     responseRes = webSession.post(searchProductListUrl, data = postData, headers = defaultHeader,verify=False )
     webSession.cookies.save()
-    # print(f"statusCode = {responseRes.status_code}")
+    print(f"statusCode = {responseRes.status_code}"+":"+searchProductListUrl+"     code:"+str(product2ndLMCode)+"   page:"+str(nowPage))
     # print(f"text = {responseRes.text}")
     return responseRes.text
 
@@ -377,20 +377,19 @@ def writeFirstCodeLine():
     except:
         print("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
         return
-    for x in searchProductList['data']['shopProducts']:
-        for y in x :
+    for y in searchProductList['data']['shopProducts'][0] :
+        try:
+            data_code.write( str(y)+",")
+            data_code.flush()
+            pass
+        except:
+            print("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
             try:
-                data_code.write( y+",")
+                data_code.write( "\n")
                 data_code.flush()
-                pass
+                continue
             except:
-                print("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
-                try:
-                    data_code.write( "\n")
-                    data_code.flush()
-                    continue
-                except:
-                    return    
+                return    
     try:
             data_code.write( "\n")
             data_code.flush()
@@ -429,12 +428,6 @@ def raedProductList(code,page):
         detial=detial.replace("  "," ")
         detial=detial.replace("  "," ")
         detial=detial.replace("  "," ")
-        # print(detial)
-        # anything=input()
-        # # print(removeTags(productName))
-        # # anything=input()
-        # # print(productDetial)
-        # anything=input()
         data=data+detial.replace(",","，").strip().replace("\n"," ")+","
         data=data+"\n"
         # print(data)
@@ -450,6 +443,7 @@ def raedProductList(code,page):
                 continue
             except  :
                 return searchProductList['data']['shopProducts']
+            return searchProductList['data']['shopProducts']
     return searchProductList['data']['shopProducts']
             
 def readCategoryProducts(code,name,page):
@@ -464,11 +458,11 @@ def readCategoryProducts(code,name,page):
         print(cList[code]+"   : page :"+str(i)+"  ALL:"+ str(totalCount))
         shopProducts=raedProductList(code,i)
         if(shopProducts==None):
-            return
+            return "err shopProducts None page:" + i +"  code:"+code+"  name:"+name
         # print(len(shopProducts))
         # print(shopProducts)
 
-        
+    return "Finished code:"+code+"  Name:"+name
     
 
 
@@ -482,9 +476,28 @@ if __name__ == "__main__":
     loGinInfo=getLoginIfo() 
     categoryList=readCategoryList()
     # cList=categoryList
-    writeFirstCodeLine()
+    # writeFirstCodeLine()
+    numreturn=0
+    dataout=""
     for x in categoryList.keys():
-        readCategoryProducts(x,categoryList[x],1)
+        dataout+=str(x)+":"+categoryList[x]+"   "
+        if(numreturn==3):
+            numreturn=0
+            print(dataout)
+            dataout=""   
+    check=""
+    print("按照以上代码，输入你要下载的分类，所有分类请直接回车")
+    toCheck=input()
+    for x in categoryList.keys():
+        if(x==toCheck or toCheck==None):
+            check="yes"
+        if(check!="yes"):
+            continue
+        print("reading "+str(x)+":"+categoryList[x])      
+        resault=readCategoryProducts(x,categoryList[x],1)
+        print(resault)
+        
+        
         # searchProductList=json.loads(postSearchProductList(x,1))
         # print(searchProductList['rtn_msg'])
         # print("pageCount:"+str(searchProductList['data']['pageCount']))
