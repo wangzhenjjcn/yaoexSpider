@@ -1,7 +1,6 @@
 #coding=utf-8
 import sys,time,datetime,os,requests
 import json
-import pytesseract
 import base64
 # import rsa
 from Crypto.PublicKey import RSA
@@ -9,7 +8,7 @@ from Crypto.Cipher import PKCS1_v1_5
 import base64
 from PIL import Image
 from random import random
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 
 data_file=open("data.csv","a")
 data_code=open("code.csv","a")
