@@ -495,7 +495,8 @@ if __name__ == "__main__":
         print("reading "+str(x)+":"+categoryList[x])      
         resault=readCategoryProducts(x,categoryList[x],1)
         print(resault)
-        
+        if(toCheck!="" or toCheck!=None):
+            break
         # searchProductList=json.loads(postSearchProductList(x,1))
         # print(searchProductList['rtn_msg'])
         # print("pageCount:"+str(searchProductList['data']['pageCount']))
