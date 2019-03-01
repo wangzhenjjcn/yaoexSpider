@@ -497,7 +497,6 @@ if __name__ == "__main__":
         resault=readCategoryProducts(x,categoryList[x],1)
         print(resault)
         
-        
         # searchProductList=json.loads(postSearchProductList(x,1))
         # print(searchProductList['rtn_msg'])
         # print("pageCount:"+str(searchProductList['data']['pageCount']))
