@@ -10,8 +10,8 @@ from PIL import Image
 from random import random
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
 
-data_file=open("data.csv","a")
-data_code=open("code.csv","a")
+data_file=open("./tmp/data.csv","a",encoding='utf-8')
+data_code=open("./tmp/code.csv","a",encoding='utf-8')
 cList={}
 
 try:
@@ -44,7 +44,7 @@ defaultHeader = {
 def openPage(URL):
     print("open:"+URL)
     responseRes = webSession.get(URL,  headers = defaultHeader)
-    print(f"statusCode = {responseRes.status_code}")
+    # print(f"statusCode = {responseRes.status_code}")
     # print(f"text = {responseRes.text}")
     webSession.cookies.save()
     return responseRes.text
@@ -68,7 +68,7 @@ def postPassportSSOShowTag(passportPage):
         }
     responseRes = webSession.post(postPassportSSOShowTagURL, data = postData, headers = postPassportSSOShowTagHeader,verify=False )
     webSession.cookies.save()
-    print(f"statusCode = {responseRes.status_code}")
+    # print(f"statusCode = {responseRes.status_code}")
     # print(f"text = {responseRes.text}")
     return responseRes.text
 
@@ -150,7 +150,7 @@ def getMainPage():
     mainPageUrl="http://mall.yaoex.com/?source=1"
     # print("mainPageUrl:"+mainPageUrl)
     responseRes = webSession.get(mainPageUrl,  headers = defaultHeader)
-    print(f"statusCode = {responseRes.status_code}" +":"+mainPageUrl)
+    # print(f"statusCode = {responseRes.status_code}" +":"+mainPageUrl)
     # print(f"text = {responseRes.text}")
     webSession.cookies.save()
     return responseRes.text
@@ -159,7 +159,7 @@ def getLoginIfo():
     LoginInfoUrl="http://mall.yaoex.com/index/login"
     # print("LoginInfoUrl:"+LoginInfoUrl)
     responseRes = webSession.get(LoginInfoUrl,  headers = defaultHeader)
-    print(f"statusCode = {responseRes.status_code}"+":"+LoginInfoUrl)
+    # print(f"statusCode = {responseRes.status_code}"+":"+LoginInfoUrl)
     # print(f"text = {responseRes.text}")
     webSession.cookies.save()
     return responseRes.text
@@ -177,11 +177,21 @@ def reLogin():
         print(login_msg)
 
 
+def getHtmlByCode(fromCode,toCode,data):
+    if(fromCode in data and toCode in data[data.index(fromCode):]):
+        # print(fromCode+","+toCode+", in data")
+        value=data[data.index(fromCode)+len(fromCode):]
+        value=value[:value.index(toCode)]
+        return value
+    else:
+        return ""
+
+
 def getCategoryList():
     categoryListUrl="http://mall.yaoex.com/catg/categoryList"
     # print()
     responseRes = webSession.get(categoryListUrl,  headers = defaultHeader)
-    print(f"statusCode = {responseRes.status_code}"+":"+categoryListUrl)
+    # print(f"statusCode = {responseRes.status_code}"+":"+categoryListUrl)
     # print(f"text = {responseRes.text}")
     webSession.cookies.save()
     return responseRes.text
@@ -190,7 +200,7 @@ def getCategoryListByCode(code):
     categoryListUrl="http://mall.yaoex.com/catg/secondCategoryList?code="+code
     # print("categoryListUrl:"+categoryListUrl)
     responseRes = webSession.get(categoryListUrl,  headers = defaultHeader)
-    print(f"statusCode = {responseRes.status_code}"+":"+categoryListUrl)
+    # print(f"statusCode = {responseRes.status_code}"+":"+categoryListUrl)
     # print(f"text = {responseRes.text}")
     webSession.cookies.save()
     return responseRes.text
@@ -246,8 +256,9 @@ def readCategoryList():
     cData=""
     c2Data=""
     c3Data=""
+    print("开始读取分类列表代码")
     if ("success" in categoryList['status']):
-        print(len(categoryList['data']))
+        # print(len(categoryList['data']))
         for category in categoryList['data']:
             category2ListData=getCategoryListByCode(category['code'])
             category2List=json.loads(category2ListData)
@@ -297,20 +308,11 @@ def readCategoryList():
 def raedProductDetial(spuCode,vendorId):
     productDetialUrl="http://mall.yaoex.com/product/productDetail/"+str(spuCode)+"/"+str(vendorId)
     responseRes = webSession.get(productDetialUrl,  headers = defaultHeader)
-    print(f"statusCode = {responseRes.status_code}" +":"+productDetialUrl)
+    # print(f"statusCode = {responseRes.status_code}" +":"+productDetialUrl)
     # print(f"text = {responseRes.text}")
     webSession.cookies.save()
     return responseRes.text
 
-
-def getHtmlByCode(fromCode,toCode,data):
-    if(fromCode in data and toCode in data[data.index(fromCode):]):
-        # print(fromCode+","+toCode+", in data")
-        value=data[data.index(fromCode)+len(fromCode):]
-        value=value[:value.index(toCode)]
-        return value
-    else:
-        return ""
 
 
 def getHtmlById(id,htmlCode):
@@ -334,64 +336,71 @@ def removeTags(htmlCode):
     # print(data)
     return data
 
-def writeFirstLine():
+def writeFirstLine(file):
     searchProductList=json.loads(postSearchProductList("ABA",1))
     if (searchProductList['data']==None):
         return None
     try:
-        data_file.write( "分类代码,一级分类,二级分类,三级分类,spuCode,vendorId,")
-        data_file.flush()
+        file.write( "分类代码,一级分类,二级分类,三级分类,spuCode,vendorId,")
+        file.flush()
         pass
     except:
         return
     for x in searchProductList['data']['shopProducts']:
         for y in x :
             try:
-                data_file.write( y+",")
-                data_file.flush()
+                if(y!=None and y!="None"):
+                    file.write( y+",")
+                else:
+                    file.write(",")
+                file.flush()
                 pass
             except:
                 try:
-                    data_file.write( "\n")
-                    data_file.flush()
+                    file.write( "\n")
+                    file.flush()
                     continue
                 except:
                     return
     try:
-            data_file.write( "\n")
-            data_file.flush()
+            file.write( "\n")
+            file.flush()
             pass
     except:
             return
     return
 
-def writeFirstCodeLine():
+def writeFirstCodeLine(file):
     searchProductList=json.loads(postSearchProductList("ABA",1))
     if (searchProductList['data']==None):
         return None
     try:
-        data_code.write( "分类代码,一级分类,二级分类,三级分类,spuCode,vendorId,")
-        data_code.flush()
+        file.write( "分类代码,一级分类,二级分类,三级分类,spuCode,vendorId,")
+        file.flush()
         pass
     except:
         print("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
         return
     for y in searchProductList['data']['shopProducts'][0] :
         try:
-            data_code.write( str(y)+",")
-            data_code.flush()
+            if(y!=None and y!="None"):
+                file.write( str(y)+",")
+            else:
+                file.write( ",")
+            
+            file.flush()
             pass
         except:
             print("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
             try:
-                data_code.write( "\n")
-                data_code.flush()
+                file.write( "\n")
+                file.flush()
                 continue
             except:
                 return    
     try:
-            data_code.write( "\n")
-            data_code.flush()
+            file.write( "\n")
+            file.flush()
             pass
     except:
             print("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
@@ -411,8 +420,12 @@ def raedProductList(code,page):
         data=""
         data=data+cList[code]+","+ x['spuCode']+","+x['vendorId']+","
         for y in x:
-            data=data+str(x[y]).replace(",","，").strip()+","
+            if(y!=None and y!="None"):
+                data=data+str(x[y]).replace(",","，").strip()+","
+            else:
+                data=data+","
         productDetial=raedProductDetial(x['spuCode'],x['vendorId'])
+        print("Read:"+str(removeTags(getHtmlByCode("<h3>","</h3>",productDetial))).strip().replace(" ","").replace("\n","").replace("   ","").replace("  ","").replace(" ","").replace("&nbsp;","").expandtabs(tabsize=4))
         detial=getMainInfo(productDetial)
         detial=removeTags(detial)
         detial=detial.expandtabs(tabsize=4)
@@ -423,24 +436,37 @@ def raedProductList(code,page):
         detial=detial.replace("&nbsp;","")
         detial=detial.expandtabs(tabsize=4)
         detial=detial.expandtabs(tabsize=4)
-        detial=detial.replace("  "," ")
-        detial=detial.replace("  "," ")
-        detial=detial.replace("  "," ")
-        detial=detial.replace("  "," ")
+        detial=detial.replace("  "," ").replace("\n"," ")
+        detial=detial.replace("  "," ").replace("\n"," ")
+        detial=detial.replace("  "," ").replace("\n"," ")
+        detial=detial.replace("  "," ").replace("\n"," ")
         data=data+detial.replace(",","，").strip().replace("\n"," ")+","
         data=data+"\n"
+        data=data.replace("\xef\xbf\xbd","").replace("\ufffd","").replace("\uFFFD","")
+        data=data
         # print(data)
         # anything=input()
         try:
             data_code.write(data)
             data_code.flush()
             pass
-        except:       
+        except Exception as e:       
             try:
-                data_code.write("\n")
+                print("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
+                print("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
+                print("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
+                print(data)
+                print("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
+                print("ERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR")
+                print("按下任意键继续")
+                print(e)
+                anything=input()
                 data_code.flush()
                 continue
-            except  :
+            except Exception as e2:  
+                print(e2)
+                print("按下任意键继续")
+                anything=input()
                 return searchProductList['data']['shopProducts']
             return searchProductList['data']['shopProducts']
     return searchProductList['data']['shopProducts']
@@ -467,7 +493,7 @@ def readCategoryProducts(code,name,page):
 
 if __name__ == "__main__":
     webSession.cookies.load()
-    print(webSession.cookies)
+    # print(webSession.cookies)
     mainpage=getMainPage()
     loGinInfo=getLoginIfo()
     if("var showName = \'\'" in loGinInfo ):
@@ -478,24 +504,41 @@ if __name__ == "__main__":
     # writeFirstCodeLine()
     numreturn=0
     dataout=""
+    check=""
+
+
     for x in categoryList.keys():
-        dataout+=str(x)+":"+categoryList[x]+"   "
-        if(numreturn==3):
+        data2add=str(x)+":"+categoryList[x]+""
+        for i in range(1,30-len(str(x)+":")-2*len(categoryList[x])):
+            data2add+=" "
+        dataout=dataout+ data2add
+        
+        numreturn+=1
+        if(numreturn==5):
             numreturn=0
             print(dataout)
-            dataout=""   
-    check=""
+            dataout=""
+    print(dataout)
     print("按照以上代码，输入你要下载的分类，所有分类请直接回车")
+
     toCheck=input()
+    toCheck=toCheck.upper()
+    if(x==toCheck or toCheck==None or toCheck==""):
+        data_code=open("./tmp/All.csv","a",encoding='utf-8')
+        print("开始读取所有分类商品，请稍候")
+    else:    
+        data_code=open("./tmp/"+toCheck+".csv","a",encoding='utf-8')
+        print("开始读取编码为："+toCheck+"的商品，请稍候")
+    writeFirstCodeLine(data_code)
     for x in categoryList.keys():
-        if(x==toCheck or toCheck==None):
+        if(x==toCheck or toCheck==None or toCheck==""):
             check="yes"
         if(check!="yes"):
             continue
-        print("reading "+str(x)+":"+categoryList[x])      
+        print("正在读取"+str(x)+":"+categoryList[x])      
         resault=readCategoryProducts(x,categoryList[x],1)
         print(resault)
-        if(toCheck!="" or toCheck!=None):
+        if(toCheck!="" and  toCheck!=None):
             break
         # searchProductList=json.loads(postSearchProductList(x,1))
         # print(searchProductList['rtn_msg'])
@@ -505,6 +548,11 @@ if __name__ == "__main__":
     anything=input()
 data_file.close()
 data_code.close()
+
+if data_file:
+    data_file.close()
+if data_code:
+    data_code.close()
     # if ("登录状态异常" in categoryList['rtn_msg']):
     #     print("Login err")
     # else:
