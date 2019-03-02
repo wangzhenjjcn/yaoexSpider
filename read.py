@@ -548,7 +548,16 @@ if __name__ == "__main__":
         # print("pageCount:"+str(searchProductList['data']['pageCount']))
         # print("totalCount"+str(searchProductList['data']['totalCount']))
         # print(searchProductList)
-    anything=input()
+
+    newFile = open("./"+categoryList[toCheck]+".csv","wb")
+    oldFile = open("./tmp/"+categoryList[toCheck]+".csv","rb")
+    contents = oldFile.readlines()
+    newFile.writelines(contents)
+    newFile.close()
+    oldFile.close()
+
+
+
 data_file.close()
 data_code.close()
 
@@ -556,6 +565,11 @@ if data_file:
     data_file.close()
 if data_code:
     data_code.close()
+
+
+
+anything=input()
+
     # if ("登录状态异常" in categoryList['rtn_msg']):
     #     print("Login err")
     # else:
