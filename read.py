@@ -523,11 +523,14 @@ if __name__ == "__main__":
 
     toCheck=input()
     toCheck=toCheck.upper()
-    if(x==toCheck or toCheck==None or toCheck==""):
+    if(toCheck==None or  toCheck==""):
         data_code=open("./tmp/All.csv","a",encoding='utf-8')
         print("开始读取所有分类商品，请稍候")
     else:    
-        data_code=open("./tmp/"+toCheck+".csv","a",encoding='utf-8')
+        if(toCheck in categoryList.keys()):
+            data_code=open("./tmp/"+categoryList[toCheck]+".csv","a",encoding='utf-8')
+        else:
+            data_code=open("./tmp/"+toCheck+".csv","a",encoding='utf-8')
         print("开始读取编码为："+toCheck+"的商品，请稍候")
     writeFirstCodeLine(data_code)
     for x in categoryList.keys():
