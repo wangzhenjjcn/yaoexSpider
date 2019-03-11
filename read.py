@@ -477,8 +477,8 @@ def readCategoryProducts(code,name,page):
     print(searchProductList['rtn_msg'])
     pageCount=searchProductList['data']['pageCount']
     totalCount=searchProductList['data']['totalCount']
-    print("pageCount:"+str(pageCount))
-    print("totalCount"+str(totalCount))
+    # print("pageCount:"+str(pageCount))
+    # print("totalCount"+str(totalCount))
     for i in range(page,pageCount+1):
         print(cList[code]+"   : page :"+str(i)+"  ALL:"+ str(totalCount))
         shopProducts=raedProductList(code,i)
