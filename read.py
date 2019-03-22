@@ -1,7 +1,7 @@
 #coding=utf-8
 import sys,time,datetime,os,requests
 import json
-import base64
+ 
 # import rsa
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5

@@ -1,23 +1,15 @@
 @echo off
 :install
-ECHO Start to install python2.76 win32......
+ECHO Start to install python 3
 start /wait ./tmp/python-3.7.2.exe 
-ECHO install python2.76 successfully......
-
-
-
-echo start to set python sys path....... 
-echo %path%|findstr /i "python37"&&(goto run)  
-echo ERR£¡£¡£¡Please make sure path has been setted
-
-
+ECHO install python successfully......
+ping 127.1 >nul
 :run
 echo start to install pip....... 
 start /wait  python ./tmp/get-pip.py  
 start /wait pip install pyinstaller -i https://mirrors.aliyun.com/pypi/simple --trusted-host mirrors.aliyun.com
 echo install pip successfully....... 
-pause;
-
-
+ping 127.1 >nul
+echo start install requirements...
 start /wait pip install -r requirements
 pause;
